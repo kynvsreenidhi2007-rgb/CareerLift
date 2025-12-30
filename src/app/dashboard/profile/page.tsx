@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { ThemeToggle } from "./theme-toggle";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { User, Mail, Moon, Sun, Settings } from "lucide-react";
 import { redirect } from "next/navigation";
 
@@ -10,6 +10,13 @@ export default async function ProfilePage() {
     if (!user) {
         redirect("/login");
     }
+
+    // Fetch profile data from the public table (requires SQL setup)
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
 
     return (
         <div className="max-w-4xl mx-auto space-y-8 pb-20">
@@ -22,14 +29,28 @@ export default async function ProfilePage() {
                 {/* User Info Card */}
                 <div className="bg-white dark:bg-slate-900 rounded-xl border dark:border-slate-800 shadow-sm p-6 space-y-6">
                     <div className="flex items-center gap-4">
-                        <div className="h-16 w-16 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-600 dark:text-blue-300 text-2xl font-bold">
-                            {(user.email?.[0] || "U").toUpperCase()}
+                        <div className="h-16 w-16 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-600 dark:text-blue-300 text-2xl font-bold overflow-hidden">
+                            {profile?.avatar_url ? (
+                                <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                            ) : (
+                                (user.email?.[0] || "U").toUpperCase()
+                            )}
                         </div>
                         <div>
                             <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Welcome back,</p>
                             <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-                                {user.user_metadata?.full_name || user.email?.split("@")[0] || "User"}
+                                {profile?.full_name || user.user_metadata?.full_name || user.email?.split("@")[0] || "User"}
                             </h2>
+                            {/* Debug indicator for DB connection */}
+                            {profile ? (
+                                <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full border border-green-200">
+                                    Synced with DB
+                                </span>
+                            ) : (
+                                <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200">
+                                    Local Auth Only (Run SQL)
+                                </span>
+                            )}
                         </div>
                     </div>
 

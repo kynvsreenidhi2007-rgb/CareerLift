@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileText, Sparkles, MessageSquare, User, LogOut } from "lucide-react";
+import { FileText, Sparkles, MessageSquare, User, LogOut, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const menuItems = [
+    { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
     { name: "Build Resume", href: "/dashboard/build", icon: FileText },
     { name: "Enhance Resume", href: "/dashboard/enhance", icon: Sparkles },
-    { name: "Chatbot", href: "/dashboard/chatbot", icon: MessageSquare },
     { name: "Profile", href: "/dashboard/profile", icon: User },
 ];
 

@@ -11,9 +11,20 @@ export interface StandardResumeJSON {
         contact: {
             email: string;
             phone: string;
+            location?: string;
             linkedin?: string;
             website?: string;
         };
+    };
+    analysis?: {
+        score: number;
+        keywords: {
+            found: string[];
+            missing: string[];
+            score: "High" | "Medium" | "Low";
+        };
+        improvements: string[];
+        missingSkills: string[];
     };
     sections: {
         id: string;
@@ -30,17 +41,41 @@ export function bindToTemplate(data: ResumeData): StandardResumeJSON {
             version: "1.0.0",
             generatedAt: new Date().toISOString(),
         },
+        analysis: {
+            score: 0,
+            keywords: { found: [], missing: [], score: "Low" },
+            improvements: [],
+            missingSkills: []
+        },
         header: {
             name: data.personalInfo.fullName,
             contact: {
                 email: data.personalInfo.email,
                 phone: data.personalInfo.phone,
+                // Assuming 'location' might be added to personalInfo in standard types later, 
+                // but for now we map what we have or accept extended data if passed (though type is strict).
+                // If the form has a separate location state, it needs to be passed or merged. 
+                // For this pure mapper, we'll only map what's in ResumeData.
                 linkedin: data.personalInfo.linkedin || undefined,
                 website: data.personalInfo.website || undefined,
             },
         },
         sections: [
-            // Experience Section
+            // 2. Professional Summary
+            {
+                id: "summary",
+                title: "Professional Summary",
+                type: "summary",
+                content: "Experienced professional with a proven track record. (AI Generated Placeholder)",
+            },
+            // 3. Skills
+            {
+                id: "skills",
+                title: "Technical Skills",
+                type: "skills",
+                content: data.skills.split(",").map(s => s.trim()).filter(Boolean),
+            },
+            // 4. Experience
             {
                 id: "exp",
                 title: "Professional Experience",
@@ -49,10 +84,10 @@ export function bindToTemplate(data: ResumeData): StandardResumeJSON {
                     institution: exp.company,
                     role: exp.position,
                     period: `${exp.startDate} - ${exp.endDate || "Present"}`,
-                    details: exp.description ? [exp.description] : [], // Wrap single description in array for multiple bullets support later
+                    details: exp.description ? [exp.description] : [],
                 })),
             },
-            // Projects Section
+            // 5. Projects
             {
                 id: "proj",
                 title: "Key Projects",
@@ -63,7 +98,7 @@ export function bindToTemplate(data: ResumeData): StandardResumeJSON {
                     description: proj.description,
                 })),
             },
-            // Education Section
+            // 6. Education
             {
                 id: "edu",
                 title: "Education",
@@ -73,13 +108,6 @@ export function bindToTemplate(data: ResumeData): StandardResumeJSON {
                     degree: edu.degree,
                     period: `${edu.startDate} - ${edu.endDate || "Present"}`,
                 })),
-            },
-            // Skills Section
-            {
-                id: "skills",
-                title: "Technical Skills",
-                type: "skills",
-                content: data.skills.split(",").map(s => s.trim()).filter(Boolean),
             },
         ],
     };

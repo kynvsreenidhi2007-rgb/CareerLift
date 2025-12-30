@@ -3,7 +3,7 @@ import { StandardResumeJSON } from "./templates/standard";
 
 const openai = new OpenAI({
     baseURL: "https://openrouter.ai/api/v1",
-    apiKey: process.env.OPENROUTER_API_KEY || "dummy", // Safe fallback for build
+    apiKey: process.env.OPENROUTER_API_KEY || process.env.NEXT_PUBLIC_OPENROUTER_API_KEY, // Try both
     dangerouslyAllowBrowser: false,
 });
 
@@ -16,15 +16,23 @@ export async function optimizeResume(
     Your task is to rewrite the candidate's resume to match the provided Job Description.
 
     GUIDELINES:
-    1. **ATS Keywords**: Naturally weave keywords from the JD into the resume.
-    2. **Action Verbs**: Start every bullet point with a strong action verb (e.g., "Architected", "Spearheaded", "Optimized", "Reduced").
-    3. **Quantify Results**: Use specific numbers, percentages, and metrics to demonstrate impact (e.g., "Increased revenue by 20%").
-    4. **Structure**: Return the result as a STRICT JSON object matching the schema below.
+    1. **Deep Analysis**: Analyze the ENTIRE resume text. Do not hallucinate. Be critical but constructive.
+    2. **ATS Keywords**: Identify missing keywords from the JD and naturally weave them into the resume.
+    3. **Action Verbs**: Start every bullet point with a strong action verb (e.g., "Architected", "Spearheaded").
+    4. **Quantify Results**: Use specific numbers/metrics where possible (or suggest them).
+    5. **Originality**: Provide unique, tailored feedback in the analysis section, not generic advice.
+    6. **Structure**: Return a JSON object matching the schema.
 
     SCHEMA (StandardResumeJSON):
     {
       "meta": { "templateId": "default-v1", "version": "1.0.0", "generatedAt": "ISO_STRING" },
       "header": { "name": "...", "contact": { "email": "...", "phone": "...", "linkedin": "...", "website": "..." } },
+      "analysis": {
+        "score": 0-100,
+        "keywords": { "found": ["..."], "missing": ["..."], "score": "High/Medium/Low" },
+        "improvements": ["..."],
+        "missingSkills": ["..."]
+      },
       "sections": [
         { "id": "exp", "title": "Professional Experience", "type": "experience", "content": [ { "institution": "...", "role": "...", "period": "...", "details": ["bullet 1", "bullet 2"] } ] },
         { "id": "proj", "title": "Key Projects", "type": "projects", "content": [ { "name": "...", "tech": "...", "description": "..." } ] },
@@ -35,10 +43,16 @@ export async function optimizeResume(
   `;
 
     try {
-        if (process.env.OPENROUTER_API_KEY === undefined) {
-            console.warn("OPENROUTER_API_KEY is missing. Returning mock data.");
-            throw new Error("Missing API Key");
+        const apiKey = process.env.OPENROUTER_API_KEY || process.env.NEXT_PUBLIC_OPENROUTER_API_KEY;
+        console.log("AI Client - API Key Present:", !!apiKey);
+        if (apiKey) console.log("AI Client - API Key First 4 chars:", apiKey.substring(0, 4));
+
+        if (!apiKey || apiKey === "dummy" || apiKey.includes("sk-or-...")) {
+            console.warn("OPENROUTER_API_KEY is missing or invalid (placeholder).");
+            throw new Error("Missing or Invalid OpenRouter API Key. Please add it to .env.local");
         }
+
+        console.log("Calling OpenAI/OpenRouter...");
 
         const response = await openai.chat.completions.create({
             model: "google/gemini-flash-1.5", // Fast and effective model on OpenRouter

@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash2, Save } from "lucide-react";
+import { Plus, Trash2, Save, Info, AlertCircle, Sparkles } from "lucide-react";
 import { type ResumeData } from "@/types/resume";
-import { generateResumeAction } from "./actions";
+import { bindToTemplate } from "@/lib/templates/standard";
 
 export default function BuildResumePage() {
     const [formData, setFormData] = useState<ResumeData>({
@@ -14,6 +14,8 @@ export default function BuildResumePage() {
         skills: "",
     });
 
+    const [location, setLocation] = useState(""); // Local state for demo field
+
     const handlePersonalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData((prev) => ({
@@ -22,10 +24,10 @@ export default function BuildResumePage() {
         }));
     };
 
-    // Generic handler for array fields (Education, Experience, Projects)
+    // Generic handler for array fields
     const addParams = (section: "education" | "experience" | "projects") => {
         const id = Math.random().toString(36).substr(2, 9);
-        const newItems = {
+        const newItems: any = {
             education: { id, school: "", degree: "", startDate: "", endDate: "" },
             experience: { id, company: "", position: "", startDate: "", endDate: "", description: "" },
             projects: { id, name: "", description: "", technologies: "" }
@@ -62,234 +64,407 @@ export default function BuildResumePage() {
         });
     };
 
-    const handleSave = async () => {
-        try {
-            const result = await generateResumeAction(formData);
-            if (result.success) {
-                alert("Resume saved! Check console for JSON.");
-                console.log(result.data);
-            }
-        } catch (error) {
-            console.error("Failed to save:", error);
-            alert("Failed to save resume.");
-        }
-    };
-
     return (
-        <div className="max-w-4xl mx-auto pb-20">
-            <div className="flex items-center justify-between mb-8">
-                <div>
-                    <h1 className="text-3xl font-bold text-slate-900">Build Your Resume</h1>
-                    <p className="text-slate-600">Fill in the details below to generate your resume.</p>
-                </div>
-                <button
-                    onClick={handleSave}
-                    className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-                >
-                    <Save className="h-4 w-4" /> Save Progress
-                </button>
+        <div className="max-w-4xl mx-auto pb-20 space-y-8">
+            {/* Header */}
+            <div>
+                <h1 className="text-3xl font-bold text-slate-900">Build Your Resume</h1>
+                <p className="mt-2 text-slate-600">Create a professional resume from scratch. Our AI will help format it perfectly.</p>
             </div>
 
+            {/* Form Container */}
             <div className="space-y-8">
-                {/* Personal Info */}
-                <section className="bg-white p-6 rounded-xl border shadow-sm">
-                    <h2 className="text-xl font-semibold mb-4 text-slate-800">1. Personal Information</h2>
+
+                {/* Section 1: Personal Info */}
+                <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
+                    <div className="absolute top-0 right-0 bg-blue-50 text-blue-600 text-xs font-bold px-3 py-1 rounded-bl-xl border-l border-b border-blue-100">
+                        Step 1 of 4
+                    </div>
+                    <div className="mb-6">
+                        <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 text-sm">1</span>
+                            Personal Information
+                        </h2>
+                        <p className="text-sm text-slate-500 ml-10 mt-1">
+                            Contact details recruiters use to reach you.
+                        </p>
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input
-                            name="fullName"
-                            placeholder="Full Name"
-                            value={formData.personalInfo.fullName}
-                            onChange={handlePersonalChange}
-                            className="border p-2 rounded-lg w-full"
-                        />
-                        <input
-                            name="email"
-                            placeholder="Email Address"
-                            value={formData.personalInfo.email}
-                            onChange={handlePersonalChange}
-                            className="border p-2 rounded-lg w-full"
-                        />
-                        <input
-                            name="phone"
-                            placeholder="Phone Number"
-                            value={formData.personalInfo.phone}
-                            onChange={handlePersonalChange}
-                            className="border p-2 rounded-lg w-full"
-                        />
-                        <input
-                            name="linkedin"
-                            placeholder="LinkedIn URL"
-                            value={formData.personalInfo.linkedin}
-                            onChange={handlePersonalChange}
-                            className="border p-2 rounded-lg w-full"
-                        />
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
+                            <input
+                                name="fullName"
+                                placeholder="e.g. Jane Doe"
+                                value={formData.personalInfo.fullName}
+                                onChange={handlePersonalChange}
+                                className="w-full border p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+                            <input
+                                name="email"
+                                placeholder="jane@example.com"
+                                value={formData.personalInfo.email}
+                                onChange={handlePersonalChange}
+                                className="w-full border p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Phone</label>
+                            <input
+                                name="phone"
+                                placeholder="+1 (555) 000-0000"
+                                value={formData.personalInfo.phone}
+                                onChange={handlePersonalChange}
+                                className="w-full border p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Location</label>
+                            <input
+                                name="location"
+                                placeholder="City, Country"
+                                value={location}
+                                onChange={(e) => setLocation(e.target.value)}
+                                className="w-full border p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">LinkedIn / Portfolio</label>
+                            <input
+                                name="linkedin"
+                                placeholder="https://linkedin.com/in/jane"
+                                value={formData.personalInfo.linkedin}
+                                onChange={handlePersonalChange}
+                                className="w-full border p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            />
+                        </div>
                     </div>
                 </section>
 
-                {/* Education */}
-                <section className="bg-white p-6 rounded-xl border shadow-sm">
-                    <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-xl font-semibold text-slate-800">2. Education</h2>
-                        <button onClick={() => addParams("education")} className="text-blue-600 text-sm font-medium flex items-center gap-1 hover:underline">
-                            <Plus className="h-4 w-4" /> Add Education
+                {/* Section 2: Education */}
+                <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
+                    <div className="absolute top-0 right-0 bg-slate-100 text-slate-500 text-xs font-bold px-3 py-1 rounded-bl-xl border-l border-b border-slate-200">
+                        Step 2 of 4
+                    </div>
+                    <div className="flex justify-between items-start mb-6">
+                        <div>
+                            <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-600 text-sm">2</span>
+                                Education
+                            </h2>
+                            <p className="text-sm text-slate-500 ml-10 mt-1">
+                                Multiple entries supported (Demo: Add at least one)
+                            </p>
+                        </div>
+                        <button onClick={() => addParams("education")} className="text-blue-600 text-sm font-medium flex items-center gap-1 hover:bg-blue-50 px-3 py-1.5 rounded-lg transition">
+                            <Plus className="h-4 w-4" /> Add
                         </button>
                     </div>
-                    <div className="space-y-4">
-                        {formData.education.map((edu) => (
-                            <div key={edu.id} className="p-4 bg-slate-50 rounded-lg relative group">
+
+                    <div className="space-y-6">
+                        {formData.education.map((edu, idx) => (
+                            <div key={edu.id} className="p-4 bg-slate-50 rounded-lg border border-slate-100 relative group animate-in fade-in slide-in-from-bottom-2">
+                                <div className="absolute -left-3 top-4 bg-slate-200 text-slate-500 text-xs w-6 h-6 flex items-center justify-center rounded-full border border-white font-bold">
+                                    {idx + 1}
+                                </div>
                                 <button
                                     onClick={() => removeItem("education", edu.id)}
-                                    className="absolute top-2 right-2 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition"
+                                    className="absolute top-2 right-2 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition p-1"
                                 >
                                     <Trash2 className="h-4 w-4" />
                                 </button>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="md:col-span-2">
+                                        <input
+                                            placeholder="School / University"
+                                            value={edu.school}
+                                            onChange={(e) => handleArrayChange("education", edu.id, "school", e.target.value)}
+                                            className="w-full border p-2 rounded-md focus:border-blue-500 outline-none"
+                                        />
+                                    </div>
                                     <input
-                                        placeholder="School / University"
-                                        value={edu.school}
-                                        onChange={(e) => handleArrayChange("education", edu.id, "school", e.target.value)}
-                                        className="border p-2 rounded-md"
-                                    />
-                                    <input
-                                        placeholder="Degree"
+                                        placeholder="Degree (e.g. BSc Computer Science)"
                                         value={edu.degree}
                                         onChange={(e) => handleArrayChange("education", edu.id, "degree", e.target.value)}
-                                        className="border p-2 rounded-md"
+                                        className="w-full border p-2 rounded-md focus:border-blue-500 outline-none"
                                     />
-                                    <input
-                                        type="date"
-                                        placeholder="Start Date"
-                                        value={edu.startDate}
-                                        onChange={(e) => handleArrayChange("education", edu.id, "startDate", e.target.value)}
-                                        className="border p-2 rounded-md"
-                                    />
-                                    <input
-                                        type="date"
-                                        placeholder="End Date"
-                                        value={edu.endDate}
-                                        onChange={(e) => handleArrayChange("education", edu.id, "endDate", e.target.value)}
-                                        className="border p-2 rounded-md"
-                                    />
-                                </div>
-                            </div>
-                        ))}
-                        {formData.education.length === 0 && <p className="text-slate-400 italic text-sm">No education added yet.</p>}
-                    </div>
-                </section>
-
-                {/* Projects & Skills */}
-                <section className="bg-white p-6 rounded-xl border shadow-sm">
-                    <h2 className="text-xl font-semibold mb-4 text-slate-800">3. Projects & Skills</h2>
-
-                    <div className="mb-6">
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Skills (Comma separated)</label>
-                        <textarea
-                            value={formData.skills}
-                            onChange={(e) => setFormData(prev => ({ ...prev, skills: e.target.value }))}
-                            placeholder="React, TypeScript, Node.js, Python..."
-                            className="border p-2 rounded-lg w-full h-24"
-                        />
-                    </div>
-
-                    <div className="flex justify-between items-center mb-4 border-t pt-4">
-                        <h3 className="text-lg font-medium text-slate-800">Projects</h3>
-                        <button onClick={() => addParams("projects")} className="text-blue-600 text-sm font-medium flex items-center gap-1 hover:underline">
-                            <Plus className="h-4 w-4" /> Add Project
-                        </button>
-                    </div>
-                    <div className="space-y-4">
-                        {formData.projects.map((proj) => (
-                            <div key={proj.id} className="p-4 bg-slate-50 rounded-lg relative group">
-                                <button
-                                    onClick={() => removeItem("projects", proj.id)}
-                                    className="absolute top-2 right-2 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition"
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                </button>
-                                <div className="grid grid-cols-1 gap-3">
-                                    <input
-                                        placeholder="Project Name"
-                                        value={proj.name}
-                                        onChange={(e) => handleArrayChange("projects", proj.id, "name", e.target.value)}
-                                        className="border p-2 rounded-md"
-                                    />
-                                    <input
-                                        placeholder="Technologies Used"
-                                        value={proj.technologies}
-                                        onChange={(e) => handleArrayChange("projects", proj.id, "technologies", e.target.value)}
-                                        className="border p-2 rounded-md"
-                                    />
-                                    <textarea
-                                        placeholder="Brief Description"
-                                        value={proj.description}
-                                        onChange={(e) => handleArrayChange("projects", proj.id, "description", e.target.value)}
-                                        className="border p-2 rounded-md h-20"
-                                    />
-                                </div>
-                            </div>
-                        ))}
-                        {formData.projects.length === 0 && <p className="text-slate-400 italic text-sm">No projects added yet.</p>}
-                    </div>
-                </section>
-
-                {/* Experience */}
-                <section className="bg-white p-6 rounded-xl border shadow-sm">
-                    <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-xl font-semibold text-slate-800">4. Experience</h2>
-                        <button onClick={() => addParams("experience")} className="text-blue-600 text-sm font-medium flex items-center gap-1 hover:underline">
-                            <Plus className="h-4 w-4" /> Add Experience
-                        </button>
-                    </div>
-                    <div className="space-y-4">
-                        {formData.experience.map((exp) => (
-                            <div key={exp.id} className="p-4 bg-slate-50 rounded-lg relative group">
-                                <button
-                                    onClick={() => removeItem("experience", exp.id)}
-                                    className="absolute top-2 right-2 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition"
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                </button>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                    <input
-                                        placeholder="Company Name"
-                                        value={exp.company}
-                                        onChange={(e) => handleArrayChange("experience", exp.id, "company", e.target.value)}
-                                        className="border p-2 rounded-md"
-                                    />
-                                    <input
-                                        placeholder="Position / Title"
-                                        value={exp.position}
-                                        onChange={(e) => handleArrayChange("experience", exp.id, "position", e.target.value)}
-                                        className="border p-2 rounded-md"
-                                    />
-                                    <input
-                                        type="date"
-                                        placeholder="Start Date"
-                                        value={exp.startDate}
-                                        onChange={(e) => handleArrayChange("experience", exp.id, "startDate", e.target.value)}
-                                        className="border p-2 rounded-md"
-                                    />
-                                    <input
-                                        type="date"
-                                        placeholder="End Date"
-                                        value={exp.endDate}
-                                        onChange={(e) => handleArrayChange("experience", exp.id, "endDate", e.target.value)}
-                                        className="border p-2 rounded-md"
-                                    />
-                                    <div className="col-span-1 md:col-span-2">
-                                        <textarea
-                                            placeholder="Responsibilities & Achievements"
-                                            value={exp.description}
-                                            onChange={(e) => handleArrayChange("experience", exp.id, "description", e.target.value)}
-                                            className="border p-2 rounded-md w-full h-24"
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <input
+                                            type="text"
+                                            placeholder="Start Year"
+                                            value={edu.startDate}
+                                            onChange={(e) => handleArrayChange("education", edu.id, "startDate", e.target.value)}
+                                            className="w-full border p-2 rounded-md focus:border-blue-500 outline-none"
+                                        />
+                                        <input
+                                            type="text"
+                                            placeholder="End Year"
+                                            value={edu.endDate}
+                                            onChange={(e) => handleArrayChange("education", edu.id, "endDate", e.target.value)}
+                                            className="w-full border p-2 rounded-md focus:border-blue-500 outline-none"
                                         />
                                     </div>
                                 </div>
                             </div>
                         ))}
-                        {formData.experience.length === 0 && <p className="text-slate-400 italic text-sm">No work experience added yet.</p>}
+                        {formData.education.length === 0 && (
+                            <div className="text-center py-8 text-slate-400 bg-slate-50/50 rounded-lg border border-dashed border-slate-200">
+                                Click "Add" to enter your education details.
+                            </div>
+                        )}
                     </div>
                 </section>
+
+                {/* Section 3: Projects & Skills */}
+                <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
+                    <div className="absolute top-0 right-0 bg-slate-100 text-slate-500 text-xs font-bold px-3 py-1 rounded-bl-xl border-l border-b border-slate-200">
+                        Step 3 of 4
+                    </div>
+                    <div className="mb-6">
+                        <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-600 text-sm">3</span>
+                            Projects & Skills
+                        </h2>
+                        <p className="text-sm text-slate-500 ml-10 mt-1">
+                            Showcase your technical expertise.
+                        </p>
+                    </div>
+
+                    <div className="space-y-6">
+                        <div className="bg-indigo-50/50 p-4 rounded-lg border border-indigo-100">
+                            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-2">
+                                <Sparkles className="h-4 w-4 text-indigo-500" /> Key Skills
+                            </label>
+                            <input
+                                value={formData.skills}
+                                onChange={(e) => setFormData(prev => ({ ...prev, skills: e.target.value }))}
+                                placeholder="e.g. React, TypeScript, Node.js, Python, AWS..."
+                                className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-slate-700 font-medium"
+                            />
+                            <p className="text-xs text-slate-500 mt-1.5 ml-1">Comma-separated values recommended for AI parsing.</p>
+                        </div>
+
+                        <div className="border-t pt-4">
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-lg font-semibold text-slate-800">Projects</h3>
+                                <button onClick={() => addParams("projects")} className="text-blue-600 text-sm font-medium flex items-center gap-1 hover:bg-blue-50 px-3 py-1.5 rounded-lg transition">
+                                    <Plus className="h-4 w-4" /> Add Project
+                                </button>
+                            </div>
+                            <div className="space-y-4">
+                                {formData.projects.map((proj, idx) => (
+                                    <div key={proj.id} className="p-4 bg-slate-50 rounded-lg border border-slate-100 relative group animate-in fade-in">
+                                        <div className="absolute -left-3 top-4 bg-slate-200 text-slate-500 text-xs w-6 h-6 flex items-center justify-center rounded-full border border-white font-bold">
+                                            {idx + 1}
+                                        </div>
+                                        <button
+                                            onClick={() => removeItem("projects", proj.id)}
+                                            className="absolute top-2 right-2 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition p-1"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </button>
+                                        <div className="space-y-3">
+                                            <input
+                                                placeholder="Project Title"
+                                                value={proj.name}
+                                                onChange={(e) => handleArrayChange("projects", proj.id, "name", e.target.value)}
+                                                className="w-full border p-2 rounded-md focus:border-blue-500 outline-none font-medium"
+                                            />
+                                            <input
+                                                placeholder="Tech Stack (e.g. Next.js, Supabase)"
+                                                value={proj.technologies}
+                                                onChange={(e) => handleArrayChange("projects", proj.id, "technologies", e.target.value)}
+                                                className="w-full border p-2 rounded-md focus:border-blue-500 outline-none text-sm"
+                                            />
+                                            <textarea
+                                                placeholder="What did you build? What was the outcome?"
+                                                value={proj.description}
+                                                onChange={(e) => handleArrayChange("projects", proj.id, "description", e.target.value)}
+                                                className="w-full border p-2 rounded-md h-20 focus:border-blue-500 outline-none text-sm resize-none"
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+                                {formData.projects.length === 0 && <p className="text-slate-400 italic text-sm pl-2">No projects added yet.</p>}
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Section 4: Experience */}
+                <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
+                    <div className="absolute top-0 right-0 bg-slate-100 text-slate-500 text-xs font-bold px-3 py-1 rounded-bl-xl border-l border-b border-slate-200">
+                        Step 4 of 4
+                    </div>
+                    <div className="flex justify-between items-start mb-6">
+                        <div>
+                            <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-600 text-sm">4</span>
+                                Experience
+                            </h2>
+                            <p className="text-sm text-slate-500 ml-10 mt-1">
+                                Clear achievements help AI quantify your impact.
+                            </p>
+                        </div>
+                        <button onClick={() => addParams("experience")} className="text-blue-600 text-sm font-medium flex items-center gap-1 hover:bg-blue-50 px-3 py-1.5 rounded-lg transition">
+                            <Plus className="h-4 w-4" /> Add Experience
+                        </button>
+                    </div>
+
+                    <div className="space-y-6">
+                        {formData.experience.map((exp, idx) => (
+                            <div key={exp.id} className="p-4 bg-slate-50 rounded-lg border border-slate-100 relative group animate-in fade-in">
+                                <div className="absolute -left-3 top-4 bg-slate-200 text-slate-500 text-xs w-6 h-6 flex items-center justify-center rounded-full border border-white font-bold">
+                                    {idx + 1}
+                                </div>
+                                <button
+                                    onClick={() => removeItem("experience", exp.id)}
+                                    className="absolute top-2 right-2 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition p-1"
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </button>
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <input
+                                            placeholder="Job Title"
+                                            value={exp.position}
+                                            onChange={(e) => handleArrayChange("experience", exp.id, "position", e.target.value)}
+                                            className="w-full border p-2 rounded-md focus:border-blue-500 outline-none font-medium"
+                                        />
+                                        <input
+                                            placeholder="Company"
+                                            value={exp.company}
+                                            onChange={(e) => handleArrayChange("experience", exp.id, "company", e.target.value)}
+                                            className="w-full border p-2 rounded-md focus:border-blue-500 outline-none"
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <input
+                                            type="text"
+                                            placeholder="Duration/Start"
+                                            value={exp.startDate}
+                                            onChange={(e) => handleArrayChange("experience", exp.id, "startDate", e.target.value)}
+                                            className="w-full border p-2 rounded-md focus:border-blue-500 outline-none text-sm"
+                                        />
+                                        <input
+                                            type="text"
+                                            placeholder="Duration/End"
+                                            value={exp.endDate}
+                                            onChange={(e) => handleArrayChange("experience", exp.id, "endDate", e.target.value)}
+                                            className="w-full border p-2 rounded-md focus:border-blue-500 outline-none text-sm"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Responsibilities & Achievements</label>
+                                        <textarea
+                                            placeholder="• Led a team of 5 developers...&#10;• Increased revenue by 20%..."
+                                            value={exp.description}
+                                            onChange={(e) => handleArrayChange("experience", exp.id, "description", e.target.value)}
+                                            className="w-full border p-2 rounded-md h-32 focus:border-blue-500 outline-none text-sm leading-relaxed"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                        {formData.experience.length === 0 && (
+                            <div className="text-center py-8 text-slate-400 bg-slate-50/50 rounded-lg border border-dashed border-slate-200">
+                                Click "Add" to enter your work experience.
+                            </div>
+                        )}
+                    </div>
+                </section>
+
+                {/* Live Preview Section */}
+                <section className="bg-slate-900 rounded-xl overflow-hidden border border-slate-700 shadow-2xl">
+                    <div className="bg-slate-800 px-6 py-4 border-b border-slate-700 flex justify-between items-center">
+                        <div>
+                            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                                <Sparkles className="h-4 w-4 text-yellow-400" /> Standardized Resume Preview (Demo)
+                            </h2>
+                            <p className="text-xs text-slate-400 mt-0.5">Preview based on CareerLift’s fixed ATS-optimized template</p>
+                        </div>
+                        <div className="bg-blue-500/20 text-blue-300 text-xs px-2 py-1 rounded border border-blue-500/30">
+                            Live Output
+                        </div>
+                    </div>
+
+                    <div className="p-6 grid gap-6 lg:grid-cols-2">
+                        {/* Info Box */}
+                        <div className="lg:col-span-2 bg-blue-900/20 border border-blue-500/20 p-4 rounded-lg flex gap-3 text-sm text-blue-200">
+                            <Info className="h-5 w-5 shrink-0 text-blue-400" />
+                            <p>
+                                All resumes generated by CareerLift follow a single, <strong>ATS-optimized template</strong> to ensure recruiter readability and fair comparison across candidates.
+                            </p>
+                        </div>
+
+                        {/* JSON View */}
+                        <div className="relative">
+                            <div className="absolute top-2 right-2 text-[10px] text-slate-500 font-mono">JSON Structure</div>
+                            <pre className="text-xs font-mono text-green-400 bg-black/50 p-4 rounded-lg h-96 overflow-auto border border-slate-800 shadow-inner">
+                                {JSON.stringify(bindToTemplate(formData), null, 2)}
+                            </pre>
+                        </div>
+
+                        {/* Visual Mockup */}
+                        <div className="bg-white p-6 rounded-lg h-96 overflow-auto text-slate-900 text-[10px] font-serif leading-relaxed shadow-white">
+                            <div className="text-center border-b pb-4 mb-4">
+                                <h1 className="text-xl font-bold uppercase tracking-wider mb-1">{formData.personalInfo.fullName || "YOUR NAME"}</h1>
+                                <p className="text-slate-600">
+                                    {formData.personalInfo.email} • {formData.personalInfo.phone} • {location || "Location"}
+                                </p>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div>
+                                    <h3 className="font-bold border-b border-slate-300 mb-1">PROFESSIONAL SUMMARY</h3>
+                                    <p>Experienced professional with a proven track record. (AI Generated Placeholder)</p>
+                                </div>
+
+                                <div>
+                                    <h3 className="font-bold border-b border-slate-300 mb-1">SKILLS</h3>
+                                    <p>{formData.skills || "List your skills here..."}</p>
+                                </div>
+
+                                <div>
+                                    <h3 className="font-bold border-b border-slate-300 mb-1">EXPERIENCE</h3>
+                                    {formData.experience.length > 0 ? formData.experience.map((exp, i) => (
+                                        <div key={i} className="mb-2">
+                                            <div className="flex justify-between font-bold">
+                                                <span>{exp.company}</span>
+                                                <span>{exp.startDate} - {exp.endDate}</span>
+                                            </div>
+                                            <div className="italic mb-1">{exp.position}</div>
+                                            <ul className="list-disc pl-4 space-y-0.5">
+                                                {exp.description ? <li>{exp.description}</li> : <li>Achievements will appear here...</li>}
+                                            </ul>
+                                        </div>
+                                    )) : <p className="italic text-slate-400">Add experience to see preview...</p>}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Submit Action */}
+                <div className="flex flex-col items-center gap-4 pt-8 border-t border-slate-100">
+                    <div className="flex items-start gap-3 bg-blue-50 text-blue-800 p-4 rounded-lg max-w-2xl text-sm border border-blue-100">
+                        <Info className="h-5 w-5 shrink-0 text-blue-600" />
+                        <p>
+                            <strong>Standardized Optimization:</strong> All resumes generated by CareerLift follow a standardized, ATS-optimized template for maximum consistency and recruiter readability.
+                        </p>
+                    </div>
+
+                    <button
+                        disabled
+                        className="flex items-center gap-2 bg-slate-800 text-white px-8 py-4 rounded-xl font-bold text-lg cursor-not-allowed opacity-80"
+                    >
+                        <Save className="h-5 w-5" /> Generate Resume (Coming Soon)
+                    </button>
+                    <p className="text-xs text-slate-500">Resume generation will be enabled in the next phase</p>
+                </div>
             </div>
         </div>
     );
