@@ -1,50 +1,43 @@
-# Deployment Guide for CareerLift
+# Deployment Guide: CareerLift
 
-This guide covers deploying the CareerLift application.
+## 1. Source Control (GitHub)
+The project is initialized with Git, but the automated push failed due to permission limits. You need to push the code manually using your credentials.
 
-## Option 1: Vercel (Recommended)
-Since this is a Next.js application, Vercel provides the smoothest deployment experience.
+### Steps to Push
+Run these commands in your terminal:
+```bash
+git push -u origin main
+```
+*If asked for authentication, use your GitHub credentials or a Personal Access Token.*
 
-1.  **Push to GitHub**: Ensure your code is in a remote repository.
-2.  **Import to Vercel**:
-    *   Go to Vercel Dashboard -> Add New -> Project.
-    *   Connect your GitHub repository.
-3.  **Configure Environment Variables**:
-    *   Add the following variables in the "Environment Variables" section:
-    
-    | Variable | Description |
-    | :--- | :--- |
-    | `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase Project URL |
-    | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Your Supabase Anon Key |
-    | `OPENROUTER_API_KEY` | Key for OpenRouter (or Gemini/Groq) |
-    | `GROQ_API_KEY` | (Optional) If using Groq fallback |
-    | `GEMINI_API_KEY` | (Optional) If using Gemini fallback |
+---
 
-4.  **Deploy**: Click "Deploy". Vercel will automatically detect `npm run build`.
+## 2. Hosting Architecture
+You asked about hosting on Vercel vs. Render.
 
-## Option 2: Render (Web Service)
-If you prefer Render for the backend/frontend logic:
+**Recommended Stack:**
+- **Frontend & Backend**: **Vercel**
+  - **Why?**: This is a Next.js application. Vercel automatically deploys both your UI and your API routes (`/api/parse-resume`, Server Actions) as serverless functions.
+  - **Do I need Render?**: **No.** You do typically not need Render for this application unless you want to run a separate, heavy backend service (e.g., Python/FastAPI) alongside Next.js. For this project, Next.js handles everything.
 
-1.  **Create Web Service**:
-    *   Connect GitHub repo.
-    *   Runtime: **Docker**.
-    *   Render will automatically detect the `Dockerfile` in the root.
-2.  **Environment Variables**:
-    *   Add the same variables as listed above in the Render dashboard.
-3.  **Start Command**: Not needed (Dockerfile handles it).
-4.  **Plan**: Ensure you select a plan with at least 512MB RAM for the Next.js build process.
+- **Database & Auth**: **Supabase**
+  - **Why?**: Supabase provides your PostgreSQL database and Authentication out of the box.
 
-## Option 3: "Split" Deployment (Frontend Vercel / Backend Render)
-*Note: This project is currently a monolithic Next.js app using Server Actions. Splitting strictly "Frontend" and "Backend" is not necessary unless you have a separate API service.*
+---
 
-If you *must* run logic on Render:
-1.  Deploy the entire app to **Render** using Option 2.
-2.  Deploy the entire app to **Vercel** using Option 1.
-3.  (Advanced) You could configure `next.config.ts` rewrites to point specific API routes to the Render instance, but this is complex and usually unnecessary for this architecture.
+## 3. Deploying to Vercel
+1.  Go to [vercel.com](https://vercel.com) and Sign Up/Login.
+2.  Click **"Add New..."** -> **Project**.
+3.  Import your GitHub repository (`inceptra2003/AI_RESUME_IMPROVER_PROJECT`).
+4.  **Configure Environment Variables**:
+    You MUST add these variables in the Vercel Project Settings during deployment (copy from your `.env.local`):
+    - `NEXT_PUBLIC_SUPABASE_URL`
+    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+    - `NEXT_PUBLIC_SITE_URL` (Set this to your Vercel domain, e.g., `https://your-project.vercel.app`)
+    - `OPENROUTER_API_KEY`
+    - `GOOGLE_CLIENT_ID`
+    - `GOOGLE_CLIENT_SECRET`
+5.  Click **Deploy**.
 
-**Recommended Strategy**: Deploy the full stack to Vercel for the demo. it's faster, free for hobby usage, and supports Server Actions natively.
-
-## Post-Deployment Checks
-*   **Auth**: Verify Login/Signup works on the production URL (Update Supabase "Site URL" in Auth Settings).
-*   **AI**: Test the "Enhance Resume" feature to ensure API keys are environment-variable accessible.
-*   **PDF**: Test the PDF download (Proxy to LatexOnline).
+## 4. Updates & Maintenance
+Whenever you push code to `main` on GitHub, Vercel will automatically redeploy your application.
