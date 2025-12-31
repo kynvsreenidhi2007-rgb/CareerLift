@@ -1,11 +1,17 @@
 import OpenAI from "openai";
 import { StandardResumeJSON } from "./templates/standard";
 
-const openai = new OpenAI({
-    baseURL: "https://openrouter.ai/api/v1",
-    apiKey: process.env.OPENROUTER_API_KEY || process.env.NEXT_PUBLIC_OPENROUTER_API_KEY, // Try both
-    dangerouslyAllowBrowser: false,
-});
+// Lazy init to avoid crash on module load if env vars are missing
+const getOpenAI = () => {
+    const apiKey = process.env.OPENROUTER_API_KEY || process.env.NEXT_PUBLIC_OPENROUTER_API_KEY;
+    if (!apiKey) return null;
+
+    return new OpenAI({
+        baseURL: "https://openrouter.ai/api/v1",
+        apiKey: apiKey,
+        dangerouslyAllowBrowser: false,
+    });
+};
 
 export async function optimizeResume(
     resumeText: string,
@@ -43,11 +49,13 @@ export async function optimizeResume(
   `;
 
     try {
+        const openai = getOpenAI();
         const apiKey = process.env.OPENROUTER_API_KEY || process.env.NEXT_PUBLIC_OPENROUTER_API_KEY;
+
         console.log("AI Client - API Key Present:", !!apiKey);
         if (apiKey) console.log("AI Client - API Key First 4 chars:", apiKey.substring(0, 4));
 
-        if (!apiKey || apiKey === "dummy" || apiKey.includes("sk-or-...")) {
+        if (!openai || !apiKey || apiKey === "dummy" || apiKey.includes("sk-or-...")) {
             console.warn("OPENROUTER_API_KEY is missing or invalid (placeholder).");
             throw new Error("Missing or Invalid OpenRouter API Key. Please add it to .env.local");
         }
@@ -105,7 +113,8 @@ export async function getChatResponse(history: Message[]): Promise<string> {
     `;
 
     try {
-        if (process.env.OPENROUTER_API_KEY === undefined) {
+        const openai = getOpenAI();
+        if (!openai) {
             return "I'm sorry, I can't connect to my brain right now (Missing API Key). But I'm rooting for you!";
         }
 
